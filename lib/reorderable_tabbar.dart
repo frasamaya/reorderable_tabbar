@@ -33,45 +33,54 @@ class _TabStyle extends AnimatedWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
-    final TabBarTheme tabBarTheme = TabBarTheme.of(context);
-    final TabBarTheme defaults = themeData.useMaterial3
-        ? _TabsDefaultsM3(context)
-        : _TabsDefaultsM2(context);
+    final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
+    final TabBarTheme defaults =
+        themeData.useMaterial3
+            ? _TabsDefaultsM3(context)
+            : _TabsDefaultsM2(context);
     final Animation<double> animation = listenable as Animation<double>;
 
     // To enable TextStyle.lerp(style1, style2, value), both styles must have
     // the same value of inherit. Force that to be inherit=true here.
-    final TextStyle defaultStyle =
-        (labelStyle ?? tabBarTheme.labelStyle ?? defaults.labelStyle!)
-            .copyWith(inherit: true);
+    final TextStyle defaultStyle = (labelStyle ??
+            tabBarTheme.labelStyle ??
+            defaults.labelStyle!)
+        .copyWith(inherit: true);
     final TextStyle defaultUnselectedStyle = (unselectedLabelStyle ??
             tabBarTheme.unselectedLabelStyle ??
             labelStyle ??
             defaults.unselectedLabelStyle!)
         .copyWith(inherit: true);
-    final TextStyle textStyle = selected
-        ? TextStyle.lerp(defaultStyle, defaultUnselectedStyle, animation.value)!
-        : TextStyle.lerp(
-            defaultUnselectedStyle, defaultStyle, animation.value)!;
+    final TextStyle textStyle =
+        selected
+            ? TextStyle.lerp(
+              defaultStyle,
+              defaultUnselectedStyle,
+              animation.value,
+            )!
+            : TextStyle.lerp(
+              defaultUnselectedStyle,
+              defaultStyle,
+              animation.value,
+            )!;
 
     final Color selectedColor =
         labelColor ?? tabBarTheme.labelColor ?? defaults.labelColor!;
-    final Color unselectedColor = unselectedLabelColor ??
+    final Color unselectedColor =
+        unselectedLabelColor ??
         tabBarTheme.unselectedLabelColor ??
         (themeData.useMaterial3
             ? defaults.unselectedLabelColor!
             : selectedColor.withAlpha(0xB2)); // 70% alpha
-    final Color color = selected
-        ? Color.lerp(selectedColor, unselectedColor, animation.value)!
-        : Color.lerp(unselectedColor, selectedColor, animation.value)!;
+    final Color color =
+        selected
+            ? Color.lerp(selectedColor, unselectedColor, animation.value)!
+            : Color.lerp(unselectedColor, selectedColor, animation.value)!;
 
     return DefaultTextStyle(
       style: textStyle.copyWith(color: color),
       child: IconTheme.merge(
-        data: IconThemeData(
-          size: 24.0,
-          color: color,
-        ),
+        data: IconThemeData(size: 24.0, color: color),
         child: child,
       ),
     );
@@ -170,8 +179,12 @@ class _IndicatorPainter extends CustomPainter {
     }
 
     final EdgeInsets insets = indicatorPadding.resolve(_currentTextDirection);
-    final Rect rect =
-        Rect.fromLTWH(tabLeft, 0.0, tabRight - tabLeft, tabBarSize.height);
+    final Rect rect = Rect.fromLTWH(
+      tabLeft,
+      0.0,
+      tabRight - tabLeft,
+      tabBarSize.height,
+    );
 
     if (!(rect.size >= insets.collapsedSize)) {
       throw FlutterError(
@@ -206,7 +219,8 @@ class _IndicatorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_IndicatorPainter old) {
-    bool rePaint = _needsPaint ||
+    bool rePaint =
+        _needsPaint ||
         controller != old.controller ||
         indicator != old.indicator ||
         tabKeys.length != old.tabKeys.length ||
@@ -264,8 +278,10 @@ class _DragAnimation extends Animation<double>
   double get value {
     assert(!controller.indexIsChanging);
     final double controllerMaxValue = (controller.length - 1).toDouble();
-    final double controllerValue =
-        controller.animation!.value.clamp(0.0, controllerMaxValue);
+    final double controllerValue = controller.animation!.value.clamp(
+      0.0,
+      controllerMaxValue,
+    );
     return (controllerValue - index.toDouble()).abs().clamp(0.0, 1.0);
   }
 }
@@ -302,8 +318,8 @@ class ReorderableTabBar extends StatefulWidget implements PreferredSizeWidget {
     this.reorderingTabBackgroundColor,
     this.tabBackgroundColor,
     this.buildDefaultDragHandles = true,
-  })  : assert(indicator != null || (indicatorWeight > 0.0)),
-        super(key: key);
+  }) : assert(indicator != null || (indicatorWeight > 0.0)),
+       super(key: key);
 
   /// if false use `ReorderableDragStartListener` or `ReorderableDelayedDragStartListener` widget
   final bool buildDefaultDragHandles;
@@ -563,9 +579,10 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
   Decoration get _indicator {
     final ThemeData theme = Theme.of(context);
     final TabBarTheme tabBarTheme = TabBarTheme.of(context);
-    final TabBarTheme defaults = theme.useMaterial3
-        ? _TabsDefaultsM3(context)
-        : _TabsDefaultsM2(context);
+    final TabBarTheme defaults =
+        theme.useMaterial3
+            ? _TabsDefaultsM3(context)
+            : _TabsDefaultsM2(context);
 
     if (widget.indicator != null) {
       return widget.indicator!;
@@ -574,7 +591,8 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       return tabBarTheme.indicator!;
     }
 
-    Color color = widget.indicatorColor ??
+    Color color =
+        widget.indicatorColor ??
         (theme.useMaterial3
             ? tabBarTheme.indicatorColor ?? defaults.indicatorColor!
             : Theme.of(context).indicatorColor);
@@ -599,10 +617,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
 
     if (widget.defaultIndicator) {
       return UnderlineTabIndicator(
-        borderSide: BorderSide(
-          width: widget.indicatorWeight,
-          color: color,
-        ),
+        borderSide: BorderSide(width: widget.indicatorWeight, color: color),
       );
     }
 
@@ -637,17 +652,18 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
   }
 
   void _initIndicatorPainter() {
-    _indicatorPainter = !_controllerIsValid
-        ? null
-        : _IndicatorPainter(
-            controller: _controller!,
-            indicator: _indicator,
-            indicatorSize:
-                widget.indicatorSize ?? TabBarTheme.of(context).indicatorSize,
-            indicatorPadding: widget.indicatorPadding,
-            tabKeys: _tabKeys,
-            old: _indicatorPainter,
-          );
+    _indicatorPainter =
+        !_controllerIsValid
+            ? null
+            : _IndicatorPainter(
+              controller: _controller!,
+              indicator: _indicator,
+              indicatorSize:
+                  widget.indicatorSize ?? TabBarTheme.of(context).indicatorSize,
+              indicatorPadding: widget.indicatorPadding,
+              tabKeys: _tabKeys,
+              old: _indicatorPainter,
+            );
   }
 
   @override
@@ -676,8 +692,9 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
     if (widget.tabs.length > oldWidget.tabs.length) {
       final int delta = widget.tabs.length - oldWidget.tabs.length;
       _tabKeys.addAll(List<GlobalKey>.generate(delta, (int n) => GlobalKey()));
-      _tabExtendKeys
-          .addAll(List<GlobalKey>.generate(delta, (int n) => GlobalKey()));
+      _tabExtendKeys.addAll(
+        List<GlobalKey>.generate(delta, (int n) => GlobalKey()),
+      );
     } else if (widget.tabs.length < oldWidget.tabs.length) {
       _tabKeys.removeRange(widget.tabs.length, oldWidget.tabs.length);
       _tabExtendKeys.removeRange(widget.tabs.length, oldWidget.tabs.length);
@@ -709,7 +726,11 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
   int get maxTabIndex => _indicatorPainter!.maxTabIndex;
 
   double _tabScrollOffset(
-      int index, double viewportWidth, double minExtent, double maxExtent) {
+    int index,
+    double viewportWidth,
+    double minExtent,
+    double maxExtent,
+  ) {
     if (!widget.isScrollable) return 0.0;
 
     double tabCenter = _indicatorPainter!.centerOf(index);
@@ -727,34 +748,43 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
     final ScrollPosition? position = _reorderController?.position;
 
     return _tabScrollOffset(
-        index,
-        position?.viewportDimension ?? screenWidth,
-        position?.minScrollExtent ?? 0,
-        position?.maxScrollExtent ?? screenWidth);
+      index,
+      position?.viewportDimension ?? screenWidth,
+      position?.minScrollExtent ?? 0,
+      position?.maxScrollExtent ?? screenWidth,
+    );
   }
 
   void _initialScrollOffset() {
     if (!widget.isScrollable) {
-      _controllers.animateTo(0.01,
-          curve: Curves.linear, duration: const Duration(milliseconds: 1));
+      _controllers.animateTo(
+        0.01,
+        curve: Curves.linear,
+        duration: const Duration(milliseconds: 1),
+      );
     }
   }
 
   void _scrollToCurrentIndex() {
     final double offset = _tabCenteredScrollOffset(_currentIndex!);
 
-    _controllers.animateTo(offset,
-        duration: kTabScrollDuration, curve: Curves.ease);
+    _controllers.animateTo(
+      offset,
+      duration: kTabScrollDuration,
+      curve: Curves.ease,
+    );
   }
 
   void _scrollToControllerValue() {
-    final double? leadingPosition = _currentIndex! > 0
-        ? _tabCenteredScrollOffset(_currentIndex! - 1)
-        : null;
+    final double? leadingPosition =
+        _currentIndex! > 0
+            ? _tabCenteredScrollOffset(_currentIndex! - 1)
+            : null;
     final double middlePosition = _tabCenteredScrollOffset(_currentIndex!);
-    final double? trailingPosition = _currentIndex! < maxTabIndex
-        ? _tabCenteredScrollOffset(_currentIndex! + 1)
-        : null;
+    final double? trailingPosition =
+        _currentIndex! < maxTabIndex
+            ? _tabCenteredScrollOffset(_currentIndex! + 1)
+            : null;
 
     final double index = _controller!.index.toDouble();
     final double value = _controller!.animation!.value;
@@ -766,13 +796,15 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
     } else if (value == index) {
       offset = middlePosition;
     } else if (value < index) {
-      offset = leadingPosition == null
-          ? middlePosition
-          : lerpDouble(middlePosition, leadingPosition, index - value)!;
+      offset =
+          leadingPosition == null
+              ? middlePosition
+              : lerpDouble(middlePosition, leadingPosition, index - value)!;
     } else {
-      offset = trailingPosition == null
-          ? middlePosition
-          : lerpDouble(middlePosition, trailingPosition, value - index)!;
+      offset =
+          trailingPosition == null
+              ? middlePosition
+              : lerpDouble(middlePosition, trailingPosition, value - index)!;
     }
 
     _controllers.jumpTo(offset);
@@ -795,7 +827,10 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
   }
 
   void _saveTabOffsets(
-      List<double> tabOffsets, TextDirection textDirection, double width) {
+    List<double> tabOffsets,
+    TextDirection textDirection,
+    double width,
+  ) {
     xOffsets = tabOffsets;
     _tabStripWidth = width;
     _indicatorPainter?.saveTabOffsets(tabOffsets, textDirection);
@@ -808,7 +843,10 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
   }
 
   Widget _buildStyledTab(
-      Widget child, bool selected, Animation<double> animation) {
+    Widget child,
+    bool selected,
+    Animation<double> animation,
+  ) {
     return _TabStyle(
       animation: animation,
       selected: selected,
@@ -825,9 +863,10 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       double width = 0;
       List<double> offsets = [0];
       TextDirection textDirection = Directionality.maybeOf(context)!;
-      for (var key in (textDirection == TextDirection.rtl
-          ? _tabExtendKeys.reversed.toList()
-          : _tabExtendKeys)) {
+      for (var key
+          in (textDirection == TextDirection.rtl
+              ? _tabExtendKeys.reversed.toList()
+              : _tabExtendKeys)) {
         width += key.currentContext?.size?.width ?? 40;
         switch (textDirection) {
           case TextDirection.rtl:
@@ -893,18 +932,18 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       }
       return true;
     }());
-    final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
+    final MaterialLocalizations localizations = MaterialLocalizations.of(
+      context,
+    );
     if (_controller!.length == 0) {
-      return Container(
-        height: _kTabHeight + widget.indicatorWeight,
-      );
+      return Container(height: _kTabHeight + widget.indicatorWeight);
     }
 
     final TabBarTheme tabBarTheme = TabBarTheme.of(context);
 
-    final List<Widget> wrappedTabs =
-        List<Widget>.generate(widget.tabs.length, (int index) {
+    final List<Widget> wrappedTabs = List<Widget>.generate(widget.tabs.length, (
+      int index,
+    ) {
       const double verticalAdjustment =
           (_kTextAndIconTabHeight - _kTabHeight) / 2.0;
       EdgeInsetsGeometry? adjustedPadding;
@@ -919,7 +958,9 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
                 .add(const EdgeInsets.symmetric(vertical: verticalAdjustment));
           } else {
             adjustedPadding = const EdgeInsets.symmetric(
-                vertical: verticalAdjustment, horizontal: 16.0);
+              vertical: verticalAdjustment,
+              horizontal: 16.0,
+            );
           }
         }
       }
@@ -927,14 +968,12 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       return Center(
         heightFactor: 1.0,
         child: Padding(
-          padding: adjustedPadding ??
+          padding:
+              adjustedPadding ??
               widget.labelPadding ??
               tabBarTheme.labelPadding ??
               kTabLabelPadding,
-          child: KeyedSubtree(
-            key: _tabKeys[index],
-            child: widget.tabs[index],
-          ),
+          child: KeyedSubtree(key: _tabKeys[index], child: widget.tabs[index]),
         ),
       );
     });
@@ -945,29 +984,48 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       if (_controller!.indexIsChanging) {
         assert(_currentIndex != previousIndex);
         final Animation<double> animation = _ChangeAnimation(_controller!);
-        wrappedTabs[_currentIndex!] =
-            _buildStyledTab(wrappedTabs[_currentIndex!], true, animation);
-        wrappedTabs[previousIndex] =
-            _buildStyledTab(wrappedTabs[previousIndex], false, animation);
+        wrappedTabs[_currentIndex!] = _buildStyledTab(
+          wrappedTabs[_currentIndex!],
+          true,
+          animation,
+        );
+        wrappedTabs[previousIndex] = _buildStyledTab(
+          wrappedTabs[previousIndex],
+          false,
+          animation,
+        );
       } else {
         final int tabIndex = _currentIndex!;
-        final Animation<double> centerAnimation =
-            _DragAnimation(_controller!, tabIndex);
-        wrappedTabs[tabIndex] =
-            _buildStyledTab(wrappedTabs[tabIndex], true, centerAnimation);
+        final Animation<double> centerAnimation = _DragAnimation(
+          _controller!,
+          tabIndex,
+        );
+        wrappedTabs[tabIndex] = _buildStyledTab(
+          wrappedTabs[tabIndex],
+          true,
+          centerAnimation,
+        );
         if (_currentIndex! > 0) {
           final int tabIndex = _currentIndex! - 1;
-          final Animation<double> previousAnimation =
-              ReverseAnimation(_DragAnimation(_controller!, tabIndex));
-          wrappedTabs[tabIndex] =
-              _buildStyledTab(wrappedTabs[tabIndex], false, previousAnimation);
+          final Animation<double> previousAnimation = ReverseAnimation(
+            _DragAnimation(_controller!, tabIndex),
+          );
+          wrappedTabs[tabIndex] = _buildStyledTab(
+            wrappedTabs[tabIndex],
+            false,
+            previousAnimation,
+          );
         }
         if (_currentIndex! < widget.tabs.length - 1) {
           final int tabIndex = _currentIndex! + 1;
-          final Animation<double> nextAnimation =
-              ReverseAnimation(_DragAnimation(_controller!, tabIndex));
-          wrappedTabs[tabIndex] =
-              _buildStyledTab(wrappedTabs[tabIndex], false, nextAnimation);
+          final Animation<double> nextAnimation = ReverseAnimation(
+            _DragAnimation(_controller!, tabIndex),
+          );
+          wrappedTabs[tabIndex] = _buildStyledTab(
+            wrappedTabs[tabIndex],
+            false,
+            nextAnimation,
+          );
         }
       }
     }
@@ -995,7 +1053,9 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
                 Semantics(
                   selected: index == _currentIndex,
                   label: localizations.tabLabel(
-                      tabIndex: index + 1, tabCount: tabCount),
+                    tabIndex: index + 1,
+                    tabCount: tabCount,
+                  ),
                 ),
               ],
             ),
@@ -1009,7 +1069,8 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
 
     double? tabWidth;
     if (!widget.isScrollable) {
-      tabWidth = (screenWidth - (widget.padding?.horizontal ?? 0)) /
+      tabWidth =
+          (screenWidth - (widget.padding?.horizontal ?? 0)) /
           wrappedTabs.length;
     }
     for (var i = 0; i < wrappedTabs.length; i++) {
@@ -1055,10 +1116,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
                 newIndex--;
               }
               if (widget.onReorder != null) {
-                isReordered = Reordered(
-                  oldIndex: oldIndex,
-                  newIndex: newIndex,
-                );
+                isReordered = Reordered(oldIndex: oldIndex, newIndex: newIndex);
                 widget.onReorder!(oldIndex, newIndex);
               }
             },
@@ -1068,10 +1126,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       ],
     );
     if (widget.padding != null) {
-      tabBar = Padding(
-        padding: widget.padding!,
-        child: tabBar,
-      );
+      tabBar = Padding(padding: widget.padding!, child: tabBar);
     }
     calculateTabStripWidth();
     return tabBar;
@@ -1095,10 +1150,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
         scrollDirection: Axis.horizontal,
         child: CustomPaint(
           painter: _indicatorPainter,
-          child: SizedBox(
-            height: widget.indicatorWeight,
-            width: width,
-          ),
+          child: SizedBox(height: widget.indicatorWeight, width: width),
         ),
       ),
     );
@@ -1108,7 +1160,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
 // Hand coded defaults based on Material Design 2.
 class _TabsDefaultsM2 extends TabBarTheme {
   const _TabsDefaultsM2(this.context)
-      : super(indicatorSize: TabBarIndicatorSize.tab);
+    : super(indicatorSize: TabBarIndicatorSize.tab);
 
   final BuildContext context;
 
@@ -1141,7 +1193,7 @@ class _TabsDefaultsM2 extends TabBarTheme {
 
 class _TabsDefaultsM3 extends TabBarTheme {
   _TabsDefaultsM3(this.context)
-      : super(indicatorSize: TabBarIndicatorSize.label);
+    : super(indicatorSize: TabBarIndicatorSize.label);
 
   final BuildContext context;
   late final ColorScheme _colors = Theme.of(context).colorScheme;
@@ -1201,8 +1253,5 @@ class _TabsDefaultsM3 extends TabBarTheme {
 class Reordered {
   int oldIndex;
   int newIndex;
-  Reordered({
-    required this.oldIndex,
-    required this.newIndex,
-  });
+  Reordered({required this.oldIndex, required this.newIndex});
 }
