@@ -578,7 +578,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
 
   Decoration get _indicator {
     final ThemeData theme = Theme.of(context);
-    final TabBarTheme tabBarTheme = TabBarTheme.of(context);
+    final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
     final TabBarTheme defaults =
         theme.useMaterial3
             ? _TabsDefaultsM3(context)
@@ -939,7 +939,7 @@ class ReorderableTabBarState extends State<ReorderableTabBar> {
       return Container(height: _kTabHeight + widget.indicatorWeight);
     }
 
-    final TabBarTheme tabBarTheme = TabBarTheme.of(context);
+    final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
 
     final List<Widget> wrappedTabs = List<Widget>.generate(widget.tabs.length, (
       int index,
